@@ -1,0 +1,43 @@
+* text=auto
+
+# Text
+*.cbp               text
+*.cpp               text
+*.lua               text
+*.log               text
+*.h                 text
+*.txt               text
+*.mat               text
+*.shader            text
+
+# MVS
+*.sdf               binary
+*.sln               -text
+*.suo               -text
+*.vcxproj           -text
+*.vcxproj.filters   -text
+*.vcxproj.user      -text
+PropertySheet.props -text
+
+#Leadwerks
+*.werk              -text
+
+#WAF
+waf                 -text -diff -merge
+wscript             text
+
+# Binary
+*.dll               -text -diff -merge
+*.jpg               -text -diff -merge
+*.map               -text -diff -merge
+*.max               -text -diff -merge
+*.mdl               -text -diff -merge
+*.meta              -text -diff -merge
+*.pfb               -text -diff -merge
+*.phy               -text -diff -merge
+*.png               -text -diff -merge
+*.tex               -text -diff -merge
+*.ttf               -text -diff -merge
+*.so                -text -diff -merge
+*.wav               -text -diff -merge
+*.xcf               -text -diff -merge

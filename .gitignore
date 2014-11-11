@@ -1,0 +1,17 @@
+# C++ compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# SlickEdit
+*.vpj
+*.vpw
+*.vpwhistu
+*.vtg
+
+# Code::Blocks
+*.depend
+*.layout
+
+
