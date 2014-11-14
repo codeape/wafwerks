@@ -27,19 +27,34 @@ def options(opt):
                    default=lw_path)
 
 def configure(ctx):
+    print "--- Create debug configuration ---"
+    ctx.setenv('debug')
     ctx.load('compiler_cxx')
     ctx.define(ctx.env.DEST_OS.upper(), 1)
     if ("WIN32" == ctx.env.DEST_OS.upper()):
         _configure_win(ctx)
     else:
         _configure_linux(ctx)
+        ctx.env.prepend_value('CXXFLAGS', ['-g', '-DDEBUG', '-D_DEBUG'])
+    print "--- Create release configuration ---"
+    ctx.setenv('release')
+    ctx.load('compiler_cxx')
+    ctx.define(ctx.env.DEST_OS.upper(), 1)
+    if ("WIN32" == ctx.env.DEST_OS.upper()):
+        _configure_win(ctx)
+    else:
+        _configure_linux(ctx)
+        ctx.env.prepend_value('CXXFLAGS', ['-O2'])
+        ctx.env.prepend_value('LINKFLAGS', ['-s'])
+
 
 def _configure_win(ctx):
     pass
 
 def _configure_linux(ctx):
     ldw = ctx.options.leadwerks_path
-    includes = [os.path.join(ldw, 'Include'),
+    includes = ['.',
+                os.path.join(ldw, 'Include'),
                 os.path.join(ldw, 'Include/Libraries/NewtonDynamics/coreLibrary_300/source/core'),
                 os.path.join(ldw, 'Include/Libraries/NewtonDynamics/coreLibrary_300/source/meshUtil'),
                 os.path.join(ldw, 'Include/Libraries/NewtonDynamics/coreLibrary_300/source/newton'),
@@ -62,10 +77,6 @@ def _configure_linux(ctx):
                 os.path.join(ldw, 'Include/Libraries/freetype-2.4.7/include/freetype/config'),
                 os.path.join(ldw, 'Include/Libraries/LuaJIT/dynasm'),
                 os.path.join(ldw, 'Include/Libraries/glew-1.6.0/include')]
-    ctx.env.INCLUDES_GAME = includes
-
-def build(ctx):
-    ldw = ctx.options.leadwerks_path
     link_flags = ['-Wl,-rpath=$ORIGIN']
     libs = ['openal',
             'GL',
@@ -75,42 +86,57 @@ def build(ctx):
             'steam_api',
             'dl']
     libs_path = [os.path.join('/usr','lib'), ctx.top_dir]
-
     stlibs = [':libluajit.a', ':Leadwerks.a']
     stlibspath = [
                     os.path.join('/usr','lib'),
                     os.path.join(ldw, 'Library', 'Linux'),
                     os.path.join(ldw, 'Library', 'Linux', 'Release')
                 ]
-    c_flags = ['-Wall',
-               '-fexceptions',
-               '-msse3',
-               '-Wno-unknown-pragmas',
-               '-DDG_DISABLE_ASSERT',
-               '-DZLIB',
-               '-DPLATFORM_LINUX',
-               '-D_NEWTON_STATIC_LIB',
-               '-DFT2_BUILD_LIBRARY',
-               '-DOPENGL',
-               '-Dunix',
-               '-D__STEAM__',
-               '-D_POSIX_VER',
-               '-D_POSIX_VER_64',
-               '-DDG_THREAD_EMULATION',
-               '-D_STATICLIB',
-               '-DDG_USE_THREAD_EMULATION',
-               '-DGL_GLEXT_PROTOTYPES',
-               '-DLEADWERKS_3_1',
-               '-DLUA_USE_LINUX',
-               '-D_CUSTOM_JOINTS_STATIC_LIB']
-    ctx.program(source = SRCFILES,
-                target = APPNAME,
-                includes = '.',
-                linkflags = link_flags,
-                lib = libs,
-                libpath = libs_path,
-                stlib = stlibs,
-                stlibpath = stlibspath,
-                cflags = c_flags,
-                use = ['GAME'])
+    cxx_flags = ['-Wall',
+                 '-fexceptions',
+                 '-msse3',
+                 '-Wno-unknown-pragmas',
+                 '-DDG_DISABLE_ASSERT',
+                 '-DZLIB',
+                 '-DPLATFORM_LINUX',
+                 '-D_NEWTON_STATIC_LIB',
+                 '-DFT2_BUILD_LIBRARY',
+                 '-DOPENGL',
+                 '-Dunix',
+                 '-D__STEAM__',
+                 '-D_POSIX_VER',
+                 '-D_POSIX_VER_64',
+                 '-DDG_THREAD_EMULATION',
+                 '-D_STATICLIB',
+                 '-DDG_USE_THREAD_EMULATION',
+                 '-DGL_GLEXT_PROTOTYPES',
+                 '-DLEADWERKS_3_1',
+                 '-DLUA_USE_LINUX',
+                 '-D_CUSTOM_JOINTS_STATIC_LIB']
+    ctx.env.INCLUDES = includes
+    ctx.env.LINKFLAGS = link_flags
+    ctx.env.LIB = libs
+    ctx.env.LIBPATH = libs_path
+    ctx.env.STLIB = stlibs
+    ctx.env.STLIBPATH = stlibspath
+    ctx.env.CXXFLAGS = cxx_flags
+
+
+def build(ctx):
+    if not ctx.variant:
+        msg = 'call "waf '+ ctx.cmd +'_debug" or "waf '+ ctx.cmd +'_release", and try "waf --help"'
+        ctx.fatal(msg)
+    if ctx.variant == 'debug':
+        ctx.program(source = SRCFILES, target = APPNAME + '.debug')
+    else:
+        ctx.program(source = SRCFILES, target = APPNAME)
+
+from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
+
+for x in ['debug', 'release']:
+    for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
+        name = y.__name__.replace('Context','').lower()
+        class tmp(y):
+            cmd = name + '_' + x
+            variant = x
 
