@@ -2,12 +2,17 @@ import os.path
 from os.path import expanduser
 import sys
 from waflib.Configure import conf
+import waflib.Scripting
+from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
 
 APPNAME = 'project-name'
 VERSION = '0.0.1'
 
 SRCFILES = [os.path.join('Source', 'App.cpp'),
             os.path.join('Source', 'main.cpp')]
+
+top = '.'
+out = 'build'
 
 @conf
 def libckok (ctx, libname, libpath):
@@ -121,17 +126,31 @@ def _configure_linux(ctx):
     ctx.env.STLIBPATH = stlibspath
     ctx.env.CXXFLAGS = cxx_flags
 
-
 def build(ctx):
     if not ctx.variant:
         msg = 'call "waf '+ ctx.cmd +'_debug" or "waf '+ ctx.cmd +'_release", and try "waf --help"'
         ctx.fatal(msg)
+    ctx.add_post_fun(post)
+    app_name = APPNAME
+    if ctx.cmd == 'clean_' + ctx.variant:
+        print 'BAJS'
+        ctx.exec_command('rm -f %s' % (app_name))
     if ctx.variant == 'debug':
-        ctx.program(source = SRCFILES, target = APPNAME + '.debug')
-    else:
-        ctx.program(source = SRCFILES, target = APPNAME)
+        app_name = APPNAME + '.debug'
+    ctx.program(source = SRCFILES, target = app_name)
 
-from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
+def post(ctx):
+    app_name = APPNAME
+    if ctx.variant == 'debug':
+        app_name = APPNAME + '.debug'
+    if ctx.cmd == 'build_' + ctx.variant:
+        ctx.exec_command('rm -f %s' % (app_name))
+        ctx.exec_command('cp %s %s' % (os.path.join(out, ctx.variant, app_name),
+                                       '.'))
+
+def distclean(ctx):
+    waflib.Scripting.distclean(ctx)
+    ctx.exec_command('rm -f %s %s' % (APPNAME, APPNAME + '.debug'))
 
 for x in ['debug', 'release']:
     for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
