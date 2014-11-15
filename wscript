@@ -130,23 +130,12 @@ def build(ctx):
     if not ctx.variant:
         msg = 'call "waf '+ ctx.cmd +'_debug" or "waf '+ ctx.cmd +'_release", and try "waf --help"'
         ctx.fatal(msg)
-    ctx.add_post_fun(post)
     app_name = APPNAME
     if ctx.cmd == 'clean_' + ctx.variant:
-        print 'BAJS'
         ctx.exec_command('rm -f %s' % (app_name))
     if ctx.variant == 'debug':
         app_name = APPNAME + '.debug'
-    ctx.program(source = SRCFILES, target = app_name)
-
-def post(ctx):
-    app_name = APPNAME
-    if ctx.variant == 'debug':
-        app_name = APPNAME + '.debug'
-    if ctx.cmd == 'build_' + ctx.variant:
-        ctx.exec_command('rm -f %s' % (app_name))
-        ctx.exec_command('cp %s %s' % (os.path.join(out, ctx.variant, app_name),
-                                       '.'))
+    ctx.program(source=SRCFILES, target=os.path.join('..', '..', app_name))
 
 def distclean(ctx):
     waflib.Scripting.distclean(ctx)
