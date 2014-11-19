@@ -9,12 +9,11 @@ if ("WIN32" == sys.platform.upper()):
     pass
 else:
     import wwlinux as wafwerks
+import wwproject
 
-APPNAME = 'project-name'
-VERSION = '0.0.1'
 
-SRCFILES = [os.path.join('Source', 'App.cpp'),
-            os.path.join('Source', 'main.cpp')]
+APPNAME = wwproject.WWPROJECT_NAME
+VERSION = wwproject.WWPROJECT_VERSION
 
 top = '.'
 out = 'build'
@@ -27,7 +26,7 @@ def libckok (ctx, libname, libpath):
 
 def options(opt):
     opt.load('compiler_cxx')
-    if ("WIN32" == sys.platform.upper()):
+    if "WIN32" == sys.platform.upper():
         lw_path = 'unknown'
     else:
         lw_path = home = os.path.join(expanduser('~'),
@@ -51,13 +50,30 @@ def configure(ctx):
     wafwerks.release_specifics(ctx)
 
 def _configure(ctx):
-    ctx.env.INCLUDES = wafwerks.get_includes(ctx)
-    ctx.env.LINKFLAGS = wafwerks.get_link_flags(ctx)
-    ctx.env.LIB = wafwerks.get_libs(ctx)
-    ctx.env.LIBPATH = wafwerks.get_libs_path(ctx)
-    ctx.env.STLIB = wafwerks.get_stlibs(ctx)
-    ctx.env.STLIBPATH = wafwerks.get_stlibs_path(ctx)
-    ctx.env.CXXFLAGS = wafwerks.get_cxx_flags(ctx)
+    libs = wafwerks.get_libs(ctx)
+    libs_path = wafwerks.get_libs_path(ctx)
+    stlibs = wafwerks.get_stlibs(ctx)
+    stlibs_path = wafwerks.get_stlibs_path(ctx)
+    includes = wafwerks.get_includes(ctx)
+    cxx_flags = wafwerks.get_cxx_flags(ctx)
+    link_flags = wafwerks.get_link_flags(ctx)
+
+    wwproject.configure(ctx,
+                        libs,
+                        libs_path,
+                        stlibs,
+                        stlibs_path,
+                        includes,
+                        cxx_flags,
+                        link_flags)
+
+    ctx.env.LIB = libs
+    ctx.env.LIBPATH = libs_path
+    ctx.env.STLIB = stlibs
+    ctx.env.STLIBPATH = stlibs_path
+    ctx.env.INCLUDES = includes
+    ctx.env.CXXFLAGS = cxx_flags
+    ctx.env.LINKFLAGS = link_flags
 
 def build(ctx):
     if not ctx.variant:
@@ -68,7 +84,8 @@ def build(ctx):
         app_name = APPNAME + '.debug'
     if ctx.cmd == 'clean_' + ctx.variant:
         ctx.exec_command('rm -f %s' % (app_name))
-    ctx.program(source=SRCFILES, target=os.path.join('..', '..', app_name))
+    ctx.program(source=wwproject.src_files(ctx),
+                target=os.path.join('..', '..', app_name))
 
 def distclean(ctx):
     waflib.Scripting.distclean(ctx)

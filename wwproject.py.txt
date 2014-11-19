@@ -1,0 +1,13 @@
+import os.path
+
+WWPROJECT_NAME = 'project-name'
+WWPROJECT_VERSION = '0.0.1'
+
+def src_files(ctx):
+    return [os.path.join('Source', 'App.cpp'),
+            os.path.join('Source', 'main.cpp')]
+
+def configure(ctx, libs, libs_path, stlibs, stlibs_path, includes,
+              cxx_flags, link_flags):
+    pass
+
