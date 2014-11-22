@@ -74,6 +74,7 @@ def get_cxx_flags(ctx):
                  '-DLEADWERKS_3_1',
                  '-DLUA_USE_LINUX',
                  '-D_CUSTOM_JOINTS_STATIC_LIB']
+    return cxx_flags
 
 def debug_specifics(ctx):
     ctx.env.prepend_value('CXXFLAGS', ['-g', '-DDEBUG', '-D_DEBUG'])
