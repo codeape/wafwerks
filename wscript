@@ -6,7 +6,7 @@ from waflib.Configure import conf
 from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
 
 if ("WIN32" == sys.platform.upper()):
-    pass
+    import wwwindows as wafwerks
 else:
     import wwlinux as wafwerks
 import wwproject
@@ -27,7 +27,7 @@ def libckok (ctx, libname, libpath):
 def options(opt):
     opt.load('compiler_cxx')
     if "WIN32" == sys.platform.upper():
-        lw_path = 'unknown'
+        lw_path = 'C:\Program Files (x86)\Steam\SteamApps\common\Leadwerks'
     else:
         lw_path = home = os.path.join(expanduser('~'),
                                       '.steam/steam/SteamApps/common/Leadwerks')
