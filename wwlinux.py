@@ -4,6 +4,7 @@ def get_includes(ctx):
     ldw = ctx.options.leadwerks_path
     includes = ['.',
                 os.path.join(ldw, 'Include'),
+                os.path.join(ldw, 'Include/Libraries/VHACD/src/VHACD_Lib/inc'),
                 os.path.join(ldw, 'Include/Libraries/NewtonDynamics/coreLibrary_300/source/core'),
                 os.path.join(ldw, 'Include/Libraries/NewtonDynamics/coreLibrary_300/source/meshUtil'),
                 os.path.join(ldw, 'Include/Libraries/NewtonDynamics/coreLibrary_300/source/newton'),
